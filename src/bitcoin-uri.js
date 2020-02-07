@@ -1,33 +1,21 @@
-export class Player {
+export function parseBitcoinUri(uri) {
+    const r = /^bitcoin:([a-zA-Z0-9]{27,34})(?:\?(.*))?$/;
+    const legalKeys = ['address', 'amount', 'value', 'message', 'send', 'tx'];
+    const match = r.exec(uri);
+    if (!match) return null;
 
-    play(song) {
-        this.currentlyPlayingSong = song;
-        this.isPlaying = true;
-    }
-
-    pause() {
-        this.isPlaying = false;
-    }
-
-    resume() {
-        if (this.isPlaying) {
-            throw new Error("song is already playing");
+    const parsed = { uri: uri }
+    if (match[2]) {
+        const queries = match[2].split('&');
+        for (let i = 0; i < queries.length; i++) {
+            const query = queries[i].split('=');
+            const key = query[0];
+            if (query.length === 2 && legalKeys.includes(key)) {
+                parsed[key] = decodeURIComponent(query[1].replace(/\+/g, '%20'));
+            }
         }
-
-        this.isPlaying = true;
     }
 
-    makeFavorite() {
-        this.currentlyPlayingSong.persistFavoriteStatus(true);
-    }
-
-}
-
-export class Song {
-
-    persistFavoriteStatus(value) {
-        // something complicated
-        throw new Error("not yet implemented");
-    }
-
+    parsed.address = match[1];
+    return parsed;
 }
